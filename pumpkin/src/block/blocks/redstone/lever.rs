@@ -8,6 +8,7 @@ use crate::block::{
 use pumpkin_data::{
     Block, BlockDirection, HorizontalFacingExt,
     block_properties::{BlockFace, BlockProperties, LeverLikeProperties},
+    sound::{Sound, SoundCategory},
 };
 use pumpkin_macros::pumpkin_block;
 use pumpkin_util::math::position::BlockPos;
@@ -35,6 +36,17 @@ async fn toggle_lever(world: &Arc<World>, block_pos: &BlockPos) {
         .await;
 
     LeverBlock::update_neighbors(world, block_pos, &lever_props).await;
+
+    let pitch = if lever_props.powered { 0.6 } else { 0.5 };
+    world.play_block_sound_fine(
+        Sound::BlockLeverClick,
+        SoundCategory::Blocks,
+        *block_pos,
+        0.3,
+        pitch,
+    ).await;
+
+    // TODO: world.emitGameEvent(player, state.get(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);
 }
 
 #[pumpkin_block("minecraft:lever")]

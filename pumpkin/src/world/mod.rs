@@ -539,6 +539,23 @@ impl World {
         self.play_sound(sound, category, &new_vec).await;
     }
 
+    pub async fn play_block_sound_fine(
+        &self,
+        sound: Sound,
+        category: SoundCategory,
+        position: BlockPos,
+        volume: f32,
+        pitch: f32,
+    ) {
+        let new_vec = Vector3::new(
+            f64::from(position.0.x) + 0.5,
+            f64::from(position.0.y) + 0.5,
+            f64::from(position.0.z) + 0.5,
+        );
+        self.play_sound_fine(sound, category, &new_vec, volume, pitch)
+            .await;
+    }
+
     pub async fn play_block_sound_expect(
         &self,
         player: &Player,
