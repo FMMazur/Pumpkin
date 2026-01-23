@@ -18,7 +18,7 @@ use rand::{Rng, rng};
 
 use crate::{
     block::{
-        BlockBehaviour, BlockFuture, BlockMetadata, OnNeighborUpdateArgs, OnPlaceArgs,
+        BlockBehaviour, BlockFuture, BlockMetadata, BrokenArgs, OnNeighborUpdateArgs, OnPlaceArgs,
         OnSyncedBlockEventArgs, PlacedArgs, blocks::redstone::is_emitting_redstone_power,
     },
     world::World,
@@ -92,6 +92,21 @@ impl BlockBehaviour for PistonBlock {
         })
     }
 
+    fn broken<'a>(&'a self, args: BrokenArgs<'a>) -> BlockFuture<'a, ()> {
+        Box::pin(async move {
+            let props = PistonProps::from_state_id(args.state.id, args.block);
+            let pos = args
+                .position
+                .offset(props.facing.to_block_direction().to_offset());
+            let (block_to_check, _) = args.world.get_block_and_state_id(&pos).await;
+            if &Block::PISTON_HEAD == block_to_check || &Block::MOVING_PISTON == block_to_check {
+                args.world
+                    .break_block(&pos, None, BlockFlags::SKIP_DROPS)
+                    .await;
+            }
+        })
+    }
+
     fn placed<'a>(&'a self, args: PlacedArgs<'a>) -> BlockFuture<'a, ()> {
         Box::pin(async move {
             if args.old_state_id == args.state_id {
@@ -148,7 +163,7 @@ impl BlockBehaviour for PistonBlock {
                     return false;
                 }
                 props.extended = true;
-                
+
                 world
                     .set_block_state(
                         pos,
@@ -271,7 +286,7 @@ impl BlockBehaviour for PistonBlock {
                     random * 0.15 + 0.6,
                 )
                 .await;
-            
+
             true
         })
     }
