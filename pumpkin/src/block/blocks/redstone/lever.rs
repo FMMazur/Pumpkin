@@ -38,13 +38,15 @@ async fn toggle_lever(world: &Arc<World>, block_pos: &BlockPos) {
     LeverBlock::update_neighbors(world, block_pos, &lever_props).await;
 
     let pitch = if lever_props.powered { 0.6 } else { 0.5 };
-    world.play_block_sound_fine(
-        Sound::BlockLeverClick,
-        SoundCategory::Blocks,
-        *block_pos,
-        0.3,
-        pitch,
-    ).await;
+    world
+        .play_block_sound_fine(
+            Sound::BlockLeverClick,
+            SoundCategory::Blocks,
+            *block_pos,
+            0.3,
+            pitch,
+        )
+        .await;
 
     // TODO: world.emitGameEvent(player, state.get(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);
 }
