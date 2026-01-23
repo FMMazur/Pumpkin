@@ -51,7 +51,7 @@ pub trait WallMountedBlock: Send + Sync {
         args: GetStateForNeighborUpdateArgs<'a>,
     ) -> BlockFuture<'a, BlockStateId> {
         Box::pin(async move {
-            if self.get_direction(args.state_id, args.block).opposite() == args.direction
+            if self.get_direction(args.state_id, args.block) == args.direction
                 && !self
                     .can_place_at(args.world, args.position, args.direction)
                     .await
