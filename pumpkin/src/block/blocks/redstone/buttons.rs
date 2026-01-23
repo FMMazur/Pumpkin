@@ -5,6 +5,8 @@ use pumpkin_data::BlockDirection;
 use pumpkin_data::HorizontalFacingExt;
 use pumpkin_data::block_properties::BlockFace;
 use pumpkin_data::block_properties::BlockProperties;
+use pumpkin_data::sound::Sound;
+use pumpkin_data::sound::SoundCategory;
 use pumpkin_data::tag::RegistryKey;
 use pumpkin_data::tag::get_tag_values;
 use pumpkin_macros::pumpkin_block_from_tag;
@@ -51,6 +53,22 @@ async fn click_button(world: &Arc<World>, block_pos: &BlockPos) {
             .schedule_block_tick(block, *block_pos, delay, TickPriority::Normal)
             .await;
         ButtonBlock::update_neighbors(world, block_pos, &button_props).await;
+
+        let sound = match block.id {
+            id if id == Block::BAMBOO_BUTTON.id => Sound::BlockBambooWoodButtonClickOn,
+            id if id == Block::CHERRY_BUTTON.id => Sound::BlockCherryWoodButtonClickOn,
+            id if id == Block::CRIMSON_BUTTON.id || id == Block::WARPED_BUTTON.id => {
+                Sound::BlockNetherWoodButtonClickOn
+            }
+            id if id == Block::STONE_BUTTON.id || id == Block::POLISHED_BLACKSTONE_BUTTON.id => {
+                Sound::BlockStoneButtonClickOn
+            }
+            _ => Sound::BlockWoodenButtonClickOn,
+        };
+
+        world
+            .play_block_sound(sound, SoundCategory::Blocks, *block_pos)
+            .await;
     }
 }
 
@@ -79,6 +97,24 @@ impl BlockBehaviour for ButtonBlock {
                 )
                 .await;
             Self::update_neighbors(args.world, args.position, &props).await;
+
+            let sound = match args.block.id {
+                id if id == Block::BAMBOO_BUTTON.id => Sound::BlockBambooWoodButtonClickOff,
+                id if id == Block::CHERRY_BUTTON.id => Sound::BlockCherryWoodButtonClickOff,
+                id if id == Block::CRIMSON_BUTTON.id || id == Block::WARPED_BUTTON.id => {
+                    Sound::BlockNetherWoodButtonClickOff
+                }
+                id if id == Block::STONE_BUTTON.id
+                    || id == Block::POLISHED_BLACKSTONE_BUTTON.id =>
+                {
+                    Sound::BlockStoneButtonClickOff
+                }
+                _ => Sound::BlockWoodenButtonClickOff,
+            };
+
+            args.world
+                .play_block_sound(sound, SoundCategory::Blocks, *args.position)
+                .await;
         })
     }
 
